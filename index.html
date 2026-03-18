@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engineering Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0b0d;--bg2:#0e1510;--bg3:#111a13;--surface:#1a2620;--surface2:#22312a;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+    --accent:#e8c46a;--accent2:#a0c8e8;--text:#e8eaf0;--text2:#8a9e94;--text3:#4a6058;
+    --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Bebas Neue',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);overflow-x:hidden;}
+  #mat-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:60px;background:rgba(8,14,10,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+  .nav-logo{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:0.1em;text-decoration:none;}
+  .nav-links{display:flex;gap:2.5rem;list-style:none;}
+  .nav-links a{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);text-decoration:none;transition:color 0.2s;}
+  .nav-links a:hover{color:var(--text);}
+
+  /* HERO */
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 3rem 5rem;overflow:hidden;z-index:1;}
+  .hero-content{position:relative;z-index:1;max-width:900px;}
+  .hero-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;}
+  .hero-tag::before{content:'';display:block;width:24px;height:1px;background:var(--accent);}
+  .hero-title{font-family:var(--display);font-size:clamp(5rem,11vw,11rem);line-height:0.9;letter-spacing:0.02em;color:var(--text);margin-bottom:2rem;}
+  .hero-title span{color:var(--accent);}
+  .hero-sub{font-size:16px;font-weight:300;color:var(--text2);line-height:1.7;max-width:520px;margin-bottom:3rem;}
+  .hero-stats{display:flex;gap:3rem;}
+  .stat-num{font-family:var(--display);font-size:2.5rem;color:var(--accent);line-height:1;}
+  .stat-label{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-top:4px;}
+  .scroll-hint{position:absolute;bottom:2rem;right:3rem;font-family:var(--mono);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);writing-mode:vertical-rl;}
+
+  /* SECTIONS */
+  section{position:relative;z-index:1;}
+  .section-header{display:flex;align-items:baseline;gap:1.5rem;margin-bottom:3rem;}
+  .section-num{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;}
+  .section-title{font-family:var(--display);font-size:clamp(2.5rem,5vw,4.5rem);letter-spacing:0.04em;color:var(--text);}
+  .section-line{flex:1;height:1px;background:var(--border);align-self:center;}
+
+  /* PROJECTS */
+  #projects{padding:8rem 3rem;}
+  .projects-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1.5px;}
+  .project-card{position:relative;background:var(--surface);overflow:hidden;cursor:pointer;transition:background 0.3s;aspect-ratio:4/3;}
+  .project-card:hover{background:var(--surface2);}
+  .project-card.featured{grid-column:span 7;aspect-ratio:16/9;}
+  .project-card.wide{grid-column:span 5;}
+  .project-card.full{grid-column:span 4;}
+  .project-img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(0.7) saturate(0.6);transition:filter 0.4s,transform 0.5s;}
+  .project-card:hover .project-img{filter:brightness(0.85) saturate(0.8);transform:scale(1.02);}
+  .project-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg3);position:relative;overflow:hidden;}
+  .project-placeholder::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(100,200,140,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(100,200,140,0.04) 1px,transparent 1px);background-size:24px 24px;}
+  .placeholder-icon{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;color:var(--text3);text-align:center;position:relative;z-index:1;}
+  .project-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,14,10,0.94) 0%,rgba(8,14,10,0.2) 50%,transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem;}
+  .project-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.75rem;}
+  .tag{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:3px 8px;border:1px solid rgba(255,255,255,0.15);color:var(--text2);border-radius:2px;}
+  .tag.cad{border-color:rgba(232,196,106,0.4);color:var(--accent);}
+  .tag.print{border-color:rgba(100,200,140,0.4);color:#6ec896;}
+  .tag.feat{border-color:rgba(201,64,64,0.4);color:#e06060;}
+  .project-name{font-family:var(--display);font-size:clamp(1.2rem,2.5vw,2rem);letter-spacing:0.04em;color:var(--text);line-height:1;margin-bottom:0.5rem;}
+  .project-desc{font-size:13px;font-weight:300;color:var(--text2);line-height:1.5;max-width:380px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .project-arrow{position:absolute;top:1rem;right:1rem;width:32px;height:32px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;border-radius:2px;}
+  .project-card:hover .project-arrow{opacity:1;}
+  .project-arrow svg{width:14px;height:14px;stroke:var(--text);fill:none;stroke-width:1.5;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;padding:2rem;}
+  .modal-overlay.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--bg2);border:1px solid var(--border2);max-width:860px;width:100%;max-height:85vh;overflow-y:auto;position:relative;transform:translateY(20px);transition:transform 0.3s;}
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .modal-img{width:100%;aspect-ratio:16/9;object-fit:cover;filter:brightness(0.8) saturate(0.7);display:block;transition:opacity 0.2s;}
+  .modal-img-placeholder{width:100%;aspect-ratio:16/9;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .modal-img-placeholder::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(100,200,140,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(100,200,140,0.04) 1px,transparent 1px);background-size:24px 24px;}
+
+  /* IMAGE GALLERY */
+  .gallery-wrap{position:relative;}
+  .gallery-btn{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;background:rgba(8,14,10,0.75);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:background 0.2s;}
+  .gallery-btn:hover{background:rgba(8,14,10,0.95);}
+  .gallery-btn svg{width:16px;height:16px;stroke:var(--text);fill:none;stroke-width:1.5;}
+  .gallery-btn.prev{left:0.75rem;}
+  .gallery-btn.next{right:0.75rem;}
+  .gallery-dots{position:absolute;bottom:0.75rem;left:50%;transform:translateX(-50%);display:flex;gap:6px;}
+  .gallery-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:background 0.2s;}
+  .gallery-dot.active{background:var(--accent);}
+  .gallery-count{position:absolute;top:0.75rem;left:0.75rem;font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.55);background:rgba(0,0,0,0.5);padding:3px 8px;}
+
+  .modal-body{padding:2rem 2.5rem 2.5rem;}
+  .modal-tags{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+  .modal-title{font-family:var(--display);font-size:clamp(2rem,4vw,3.5rem);letter-spacing:0.04em;color:var(--text);margin-bottom:1rem;line-height:1;}
+  .modal-desc{font-size:15px;font-weight:300;color:var(--text2);line-height:1.75;margin-bottom:2rem;}
+  .modal-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;border-top:1px solid var(--border);padding-top:1.5rem;}
+  .meta-key{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+  .meta-val{font-size:14px;color:var(--text);}
+  .modal-close{position:absolute;top:1rem;right:1rem;width:36px;height:36px;border:1px solid var(--border2);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:2px;z-index:10;transition:background 0.2s;}
+  .modal-close:hover{background:var(--surface);}
+  .modal-close svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.5;}
+
+  /* ABOUT */
+  #about{padding:8rem 3rem;border-top:1px solid var(--border);}
+  .about-layout{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
+  .about-text p{font-size:16px;font-weight:300;color:var(--text2);line-height:1.8;margin-bottom:1.25rem;}
+  .skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+  .skill-item{background:var(--bg);padding:1.25rem 1.5rem;}
+  .skill-name{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--text);margin-bottom:0.5rem;}
+  .skill-bar-bg{height:2px;background:var(--border2);}
+  .skill-bar-fill{height:100%;background:var(--accent);}
+  .skill-bar-fill.b{background:#6ec896;}
+
+  /* CONTACT */
+  #contact{padding:8rem 3rem;border-top:1px solid var(--border);}
+  .contact-layout{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
+  .contact-text{font-size:16px;font-weight:300;color:var(--text2);line-height:1.8;}
+  .contact-links{display:flex;flex-direction:column;gap:1px;}
+  .contact-link{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;background:var(--surface);border:1px solid transparent;text-decoration:none;transition:background 0.2s,border-color 0.2s;}
+  .contact-link:hover{background:var(--surface2);border-color:var(--border2);}
+  .contact-link-name{font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:var(--text);}
+  .contact-link-handle{font-family:var(--mono);font-size:12px;color:var(--text3);}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--border);padding:2rem 3rem;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;}
+  .footer-name{font-family:var(--display);font-size:1.5rem;letter-spacing:0.06em;color:var(--text3);}
+  .footer-copy{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:var(--text3);}
+
+  /* ANIMATION */
+  .fade-in{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease;}
+  .fade-in.visible{opacity:1;transform:translateY(0);}
+
+  /* VIEW TOGGLE (Images / 3D Model) */
+  .view-toggle-btn{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;background:transparent;border:none;color:var(--text3);cursor:pointer;transition:background 0.2s,color 0.2s;display:inline-flex;align-items:center;}
+  .view-toggle-btn.active{background:var(--surface2);color:var(--accent);}
+  .view-toggle-btn:hover:not(.active){color:var(--text2);background:var(--surface);}
+
+  /* 3D VIEWER OVERLAY */
+  #viewer-overlay{
+    position:fixed;inset:0;z-index:300;
+    background:#0b1510;
+    display:none;flex-direction:column;
+    opacity:0;transition:opacity 0.4s ease;
+  }
+  #viewer-topbar{
+    position:absolute;top:0;left:0;right:0;height:52px;
+    background:rgba(8,14,10,0.92);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border2);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 2rem;z-index:10;
+  }
+  #viewer-topbar-title{
+    font-family:var(--mono);font-size:12px;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--text2);
+  }
+  #viewer-close{
+    font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--text2);
+    background:none;border:1px solid var(--border2);
+    padding:6px 16px;cursor:pointer;border-radius:2px;
+    transition:background 0.2s,color 0.2s;
+  }
+  #viewer-close:hover{background:var(--surface);color:var(--text);}
+  #viewer-canvas-wrap{flex:1;position:relative;margin-top:52px;}
+  #viewer-hint{
+    position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+    font-family:var(--mono);font-size:11px;color:var(--text3);
+    letter-spacing:0.1em;pointer-events:none;
+    opacity:0;transition:opacity 0.6s ease;
+  }
+
+  @media(max-width:900px){
+    nav{padding:0 1.5rem;}.nav-links{display:none;}
+    .hero{padding:0 1.5rem 4rem;}
+    #projects{padding:5rem 1.5rem;}
+    .projects-grid{grid-template-columns:1fr 1fr;}
+    .project-card.featured,.project-card.wide,.project-card.full{grid-column:span 2;}
+    .about-layout,.contact-layout{grid-template-columns:1fr;gap:3rem;}
+    #about,#contact{padding:5rem 1.5rem;}
+    footer{padding:2rem 1.5rem;}
+  }
+  @media(max-width:500px){
+    .projects-grid{grid-template-columns:1fr;}
+    .project-card.featured,.project-card.wide,.project-card.full{grid-column:span 1;}
+    .hero-stats{gap:2rem;}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="mat-canvas"></canvas>
+
+<!-- 3D VIEWER — must be inside <body> so the DOM can find it -->
+<div id="viewer-overlay">
+  <div id="viewer-topbar">
+    <span id="viewer-topbar-title">Interactive 3D Model</span>
+    <button id="viewer-close">Done</button>
+  </div>
+  <div id="viewer-canvas-wrap"></div>
+  <div id="viewer-hint">Drag to rotate &nbsp;&middot;&nbsp; Scroll to zoom</div>
+</div>
+
+<nav>
+  <a class="nav-logo" href="#">[ME.PORTFOLIO]</a>
+  <ul class="nav-links">
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">Mechanical Engineer</div>
+    <h1 class="hero-title">SHEIKH<br><span>FAHAD</span><br>IMRAN</h1>
+    <p class="hero-sub">Designing precision mechanical systems — from parametric CAD models to functional prototypes. Specializing in SolidWorks, 3D printing, and design for manufacture.</p>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num" id="stat-projects">—</div>
+        <div class="stat-label">Projects</div>
+      </div>
+      <div>
+        <div class="stat-num" id="stat-years">—</div>
+        <div class="stat-label">Years CAD</div>
+      </div>
+      <div>
+        <div class="stat-num">FDM</div>
+        <div class="stat-label">Fabrication</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">Scroll to explore</div>
+</section>
+
+<section id="projects">
+  <div class="section-header fade-in">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Projects</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="projects-grid" id="projects-grid"></div>
+</section>
+
+<section id="about">
+  <div class="section-header fade-in">
+    <span class="section-num">02</span>
+    <h2 class="section-title">About</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="about-layout">
+    <div class="about-text fade-in">
+      <p>Engineering student with a focus on mechanical design, parametric modelling, and rapid prototyping. I approach every project with precision — from initial concept sketches through to finished physical parts.</p>
+      <p>My toolkit centres around SolidWorks for parametric CAD, FDM 3D printing for functional prototypes, and an interest in design-for-manufacture principles.</p>
+      <p>I believe presentation matters as much as technical quality — clean renders, organised documentation, and clear communication are part of every deliverable.</p>
+    </div>
+    <div class="skills-grid fade-in">
+      <div class="skill-item"><div class="skill-name">SolidWorks</div><div class="skill-bar-bg"><div class="skill-bar-fill" style="width:90%"></div></div></div>
+      <div class="skill-item"><div class="skill-name">FDM Printing</div><div class="skill-bar-bg"><div class="skill-bar-fill" style="width:85%"></div></div></div>
+      <div class="skill-item"><div class="skill-name">GD&amp;T</div><div class="skill-bar-bg"><div class="skill-bar-fill b" style="width:70%"></div></div></div>
+      <div class="skill-item"><div class="skill-name">DXF / SVG</div><div class="skill-bar-bg"><div class="skill-bar-fill b" style="width:80%"></div></div></div>
+      <div class="skill-item"><div class="skill-name">Sheet Metal</div><div class="skill-bar-bg"><div class="skill-bar-fill" style="width:65%"></div></div></div>
+      <div class="skill-item"><div class="skill-name">FEA (SimX)</div><div class="skill-bar-bg"><div class="skill-bar-fill b" style="width:55%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="section-header fade-in">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Contact</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="contact-layout">
+    <div class="contact-text fade-in">Available for internship and co-op positions, freelance CAD work, and collaborative engineering projects. Reach out through any of the channels listed.</div>
+    <div class="contact-links fade-in">
+      <a href="/cdn-cgi/l/email-protection#20594f555260454d41494c0e434f4d" class="contact-link"><span class="contact-link-name">Email</span><span class="contact-link-handle"><span class="__cf_email__" data-cfemail="dda4b2a8af9db8b0bcb4b1f3beb2b0">[email&#160;protected]</span></span></a>
+      <a href="https://linkedin.com/in/yourhandle" class="contact-link" target="_blank"><span class="contact-link-name">LinkedIn</span><span class="contact-link-handle">/in/yourhandle</span></a>
+      <a href="https://github.com/yourhandle" class="contact-link" target="_blank"><span class="contact-link-name">GitHub</span><span class="contact-link-handle">@yourhandle</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-name">SHEIKH FAHAD IMRAN</div>
+  <div class="footer-copy">Mechanical Engineering Portfolio &mdash; <span id="year"></span></div>
+</footer>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div id="modal-img-wrap"></div>
+    <div class="modal-body">
+      <div class="modal-tags" id="modal-tags"></div>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-meta" id="modal-meta"></div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════════════════════════════════
+//  PROJECTS
+//  image  : "images/photo.jpg"  or  ["images/a.jpg","images/b.jpg"]
+//  viewer3d : true  →  clicking the card opens the 3D viewer
+//             instead of the image modal.
+//             Set glb: "models/yourfile.glb" to point at your file.
+// ══════════════════════════════════════════════════════════════
+const PROJECTS = [
+  {
+    name: "NxT-Gen-Transport Aid - Incapacitated Human Carrying System",
+    short: "INTRODUCTION TO ENGINEERING DESIGN - DESIGN PROJECT.",
+    description: "The Incapacitated Human Carrying System or IHCS uses a variety of subsystems as methods in which the intervention can facilitate its use as well as combat forms of inconvenience such as environmental terrain problems as well inclement weather.",
+    tags: ["CAD", "DESIGN", "Featured"],
+    layout: "featured",
+    image: ["images/Gemini_Generated_NxT_Gen_Transport_Aid_1.png", "images/Gemini_Generated_NxT_Gen_Transport_Aid_2.png"],
+    viewer3d: true,
+    glb: "models/assembly-no-roof.glb",
+    meta: { "Software": "SolidWorks", "Fabrication": "N/A", "Year": "2023", "Status": "Completed" }
+  },
+  {
+    name: "Exposed NVMe Enclosure (JMS583 + M.2 2260 Solid State Drives - SSD)",
+    short: "A sleek PCB frame featuring a slide-in hexagonal mesh lid for maximum airflow and heat dissipation.",
+    description: "Longer text that appears in the popup modal when someone clicks the card.",
+    tags: ["CAD", "3D Print", "Electronics"],
+    layout: "wide",
+    image: ["images/Gemini_Generated_NVMe_Enclosure_1.png"],
+    meta: { "Software": "SolidWorks", "Fabrication": "FDM / ABS", "Year": "2026", "Status": "Printed & Tested" }
+  },
+  {
+    name: "Sweetheart Treasure Box",
+    short: "Parametric heart-shaped gift container designed around a mathematically correct cardioid curve.",
+    description: "A fully parametric heart-shaped box built in SolidWorks around a corrected cardioid curve equation. The project involved resolving import errors, generating DXF/SVG outputs, and iterating on lid-fit tolerances. Designed for FDM printing with zero supports required on either body or lid.",
+    tags: ["CAD", "3D Print", "Valentines Day Special", "Storage"],
+    layout: "full",
+    image: "images/Gemini_Generated_Sweet_Heart_Treasure_Box_1.png",
+    meta: { "Software": "SolidWorks", "Fabrication": "FDM / PLA", "Year": "2026", "Status": "Printed & Tested" }
+  },
+  {
+    name: "PORSCHE Camshaft Tower Key Holder",
+    short: "A sleek, precision-inspired key holder crafted for automotive enthusiasts.",
+    description: "Bring a touch of engineering excellence to your space with the PORSCHE Camshaft Tower Key Holder. Inspired by the intricate design of a camshaft tower, this piece blends functionality with iconic automotive styling. Perfect for organizing your keys while showcasing your passion for performance and precision.",
+    tags: ["Key Holder", "CAD", "3D Print"],
+    layout: "full",
+    image: ["images/Gemini_Generated_Image_Camshaft_Tower_Key_Holder_1.png", "images/Camshaft_Tower_Key_Holder_2.jpg"],
+    meta: { "Software": "SolidWorks", "Fabrication": "FDM / ABS / ACETONE SMOOTHING", "Year": "2025", "Status": "Ongoing" }
+  },
+  {
+    name: "Add Your Project",
+    short: "Drop a rendered image and fill in the fields to showcase your work.",
+    description: "To add a project: find the PROJECTS array in the script section. Copy an existing entry, paste it as a new object in the array, and update all the fields.",
+    tags: ["Template"],
+    layout: "full",
+    image: "",
+    meta: { "How to add": "Edit PROJECTS array", "Image tip": "Use rendered images", "Layouts": "featured / wide / full" }
+  }
+];
+
+// ── Helpers ──────────────────────────────────────────────────
+function getImages(p) {
+  if (!p.image || p.image === '') return [];
+  return Array.isArray(p.image) ? p.image : [p.image];
+}
+
+// ── Render cards ─────────────────────────────────────────────
+const grid = document.getElementById('projects-grid');
+const tagClass = { CAD:'cad', '3D Print':'print', 'Featured':'feat' };
+
+PROJECTS.forEach(p => {
+  const imgs = getImages(p);
+  const card = document.createElement('div');
+  card.className = 'project-card ' + (p.layout || 'full');
+  const tags = p.tags.map(t => `<span class="tag ${tagClass[t]||''}">${t}</span>`).join('');
+  const thumb = imgs.length > 0
+    ? `<img class="project-img" src="${imgs[0]}" alt="${p.name}" loading="lazy">`
+    : `<div class="project-placeholder"><div class="placeholder-icon">[ No render yet ]</div></div>`;
+
+  card.innerHTML = `${thumb}
+    <div class="project-overlay">
+      <div class="project-tags">${tags}</div>
+      <div class="project-name">${p.name}</div>
+      <div class="project-desc">${p.short}</div>
+    </div>
+    <div class="project-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>`;
+
+  card.addEventListener('click', () => openModal(p));
+  grid.appendChild(card);
+});
+
+// ── Stats ────────────────────────────────────────────────────
+document.getElementById('stat-projects').textContent =
+  PROJECTS.filter(p => !p.name.startsWith('Add')).length;
+
+const CAD_START = 2024;
+const yearsCAD  = new Date().getFullYear() - CAD_START;
+document.getElementById('stat-years').textContent = yearsCAD > 0 ? yearsCAD + '+' : '1';
+
+// ── Modal + gallery ──────────────────────────────────────────
+const overlay = document.getElementById('modal-overlay');
+
+function renderImageArea(p) {
+  const imgs = getImages(p);
+  const wrap = document.getElementById('modal-img-wrap');
+
+  if (imgs.length === 0) {
+    wrap.innerHTML = `<div class="modal-img-placeholder"><div class="placeholder-icon" style="font-size:12px;color:var(--text3);position:relative;z-index:1">[ Render pending ]</div></div>`;
+    return;
+  }
+  if (imgs.length === 1) {
+    wrap.innerHTML = `<img class="modal-img" src="${imgs[0]}" alt="${p.name}">`;
+    return;
+  }
+  // Gallery
+  let idx = 0;
+  wrap.innerHTML = `
+    <div class="gallery-wrap">
+      <img class="modal-img" id="gallery-img" src="${imgs[0]}" alt="${p.name}">
+      <button class="gallery-btn prev" id="gallery-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="gallery-btn next" id="gallery-next"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="gallery-dots">${imgs.map((_,d)=>`<div class="gallery-dot ${d===0?'active':''}" data-i="${d}"></div>`).join('')}</div>
+      <div class="gallery-count" id="gallery-count">1 / ${imgs.length}</div>
+    </div>`;
+
+  function goTo(i) {
+    idx = (i + imgs.length) % imgs.length;
+    const img = document.getElementById('gallery-img');
+    img.style.opacity = '0';
+    setTimeout(() => { img.src = imgs[idx]; img.style.opacity = '1'; }, 150);
+    document.getElementById('gallery-count').textContent = `${idx + 1} / ${imgs.length}`;
+    wrap.querySelectorAll('.gallery-dot').forEach((d, di) => d.classList.toggle('active', di === idx));
+  }
+  document.getElementById('gallery-prev').addEventListener('click', e => { e.stopPropagation(); goTo(idx - 1); });
+  document.getElementById('gallery-next').addEventListener('click', e => { e.stopPropagation(); goTo(idx + 1); });
+  wrap.querySelectorAll('.gallery-dot').forEach(d =>
+    d.addEventListener('click', e => { e.stopPropagation(); goTo(+d.dataset.i); }));
+}
+
+function render3DArea(p) {
+  const wrap = document.getElementById('modal-img-wrap');
+  // Inline 3D canvas — same 16/9 ratio as images
+  wrap.innerHTML = `<div id="modal-3d-wrap" style="width:100%;aspect-ratio:16/9;position:relative;background:#0b1510;overflow:hidden;">
+    <div id="modal-3d-hint" style="position:absolute;bottom:0.75rem;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;pointer-events:none;opacity:0;transition:opacity 0.6s 1.2s;">Drag to rotate &nbsp;&middot;&nbsp; Scroll to zoom</div>
+  </div>`;
+  bootInlineViewer(document.getElementById('modal-3d-wrap'), p.glb || 'models/assembly-no-roof.glb');
+  setTimeout(() => {
+    const hint = document.getElementById('modal-3d-hint');
+    if (hint) hint.style.opacity = '1';
+  }, 1400);
+}
+
+function openModal(p) {
+  currentModalProject = p;
+  const wrap = document.getElementById('modal-img-wrap');
+
+  // Render image area by default
+  renderImageArea(p);
+
+  // Tags row — include 3D toggle if applicable
+  const tagsHTML = p.tags.map(t => `<span class="tag ${tagClass[t]||''}">${t}</span>`).join('');
+  const toggleHTML = p.viewer3d ? `
+    <div id="view-toggle" style="display:inline-flex;align-items:center;gap:0px;margin-left:auto;border:1px solid var(--border2);border-radius:2px;overflow:hidden;flex-shrink:0;">
+      <button id="toggle-images" class="view-toggle-btn active" onclick="switchModalView('images', currentModalProject)">
+        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="1.5" style="margin-right:4px;vertical-align:middle;"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M9 21V9"/></svg>Images
+      </button>
+      <button id="toggle-3d" class="view-toggle-btn" onclick="switchModalView('3d', currentModalProject)">
+        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="1.5" style="margin-right:4px;vertical-align:middle;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>3D Model
+      </button>
+    </div>` : '';
+
+  document.getElementById('modal-tags').innerHTML = `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;">${tagsHTML}${toggleHTML}</div>`;
+  document.getElementById('modal-title').textContent = p.name;
+  document.getElementById('modal-desc').textContent = p.description;
+  document.getElementById('modal-meta').innerHTML = p.meta
+    ? Object.entries(p.meta).map(([k,v]) =>
+        `<div><div class="meta-key">${k}</div><div class="meta-val">${v}</div></div>`).join('')
+    : '';
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+// Track current project for the toggle buttons
+let currentModalProject = null;
+
+function switchModalView(mode, p) {
+  const btnImages = document.getElementById('toggle-images');
+  const btn3d     = document.getElementById('toggle-3d');
+  if (mode === 'images') {
+    renderImageArea(p);
+    btnImages.classList.add('active');
+    btn3d.classList.remove('active');
+  } else {
+    render3DArea(p);
+    btn3d.classList.add('active');
+    btnImages.classList.remove('active');
+  }
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); close3DViewer(); }
+  if (e.key === 'ArrowLeft')  document.getElementById('gallery-prev')?.click();
+  if (e.key === 'ArrowRight') document.getElementById('gallery-next')?.click();
+});
+
+// ── Scroll fade-in ───────────────────────────────────────────
+const obs = new IntersectionObserver(entries =>
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.12 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  3D VIEWER
+// ══════════════════════════════════════════════════════════════
+let viewerBooted = false;
+// open3DViewer and close3DViewer kept as stubs — 3D is now inline in the modal
+function open3DViewer(p) {}
+function close3DViewer() {}
+document.getElementById('viewer-close').addEventListener('click', close3DViewer);
+
+// Tracks whether Three.js scripts have been loaded yet
+let threeLoaded = false;
+let threeLoadCallbacks = [];
+
+function ensureThree(cb) {
+  if (threeLoaded) { cb(); return; }
+  threeLoadCallbacks.push(cb);
+  if (threeLoadCallbacks.length > 1) return; // already loading
+
+  function loadScript(src, next) {
+    const s = document.createElement('script');
+    s.src = src; s.onload = next;
+    document.head.appendChild(s);
+  }
+  loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', () => {
+    loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js', () => {
+      threeLoaded = true;
+      threeLoadCallbacks.forEach(fn => fn());
+      threeLoadCallbacks = [];
+    });
+  });
+}
+
+function bootInlineViewer(wrap, glbPath) {
+  ensureThree(() => initScene(wrap, glbPath));
+}
+
+function initScene(wrap, glbPath) {
+  const W = () => wrap.clientWidth;
+  const H = () => wrap.clientHeight || Math.round(wrap.clientWidth * 9/16);
+
+  const scene    = new THREE.Scene();
+  const camera   = new THREE.PerspectiveCamera(38, W()/H(), 0.001, 400);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(W(), H());
+  renderer.outputEncoding     = THREE.sRGBEncoding;
+  renderer.toneMapping        = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.shadowMap.enabled  = true;
+  renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x0b1510, 1);
+  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;';
+  wrap.appendChild(renderer.domElement);
+
+  // Lights
+  scene.add(new THREE.HemisphereLight(0xaaccbb, 0x223322, 0.9));
+  const key = new THREE.DirectionalLight(0xffffff, 1.6);
+  key.position.set(-3,6,4); key.castShadow=true;
+  key.shadow.mapSize.set(2048,2048); key.shadow.bias=-0.001; scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(4,3,-2); scene.add(fill);
+  const rim  = new THREE.DirectionalLight(0xaaddbb, 0.35); rim.position.set(0,-1,-5); scene.add(rim);
+
+  // Orbit
+  let isDrag=false, px=0, py=0;
+  let sph={t:0.45,p:1.15,r:5}, tgt={...sph};
+  const pivot = new THREE.Vector3(0,0,0);
+  let autoRot = true;
+
+  function updateCam() {
+    camera.position.set(
+      pivot.x + sph.r*Math.sin(sph.p)*Math.sin(sph.t),
+      pivot.y + sph.r*Math.cos(sph.p),
+      pivot.z + sph.r*Math.sin(sph.p)*Math.cos(sph.t));
+    camera.lookAt(pivot);
+  }
+
+  renderer.domElement.addEventListener('mousedown', e=>{isDrag=true;autoRot=false;px=e.clientX;py=e.clientY;});
+  window.addEventListener('mouseup', ()=>isDrag=false);
+  window.addEventListener('mousemove', e=>{
+    if(!isDrag)return;
+    tgt.t-=(e.clientX-px)*0.005; px=e.clientX;
+    tgt.p=Math.max(0.2,Math.min(Math.PI-0.2,tgt.p+(e.clientY-py)*0.005)); py=e.clientY;
+  });
+  renderer.domElement.addEventListener('wheel', e=>{
+    tgt.r=Math.max(0.5,Math.min(25,tgt.r+e.deltaY*0.007)); autoRot=false;
+  },{passive:true});
+
+  // Touch
+  let lx=0,ly=0,lpd=0;
+  renderer.domElement.addEventListener('touchstart',e=>{
+    autoRot=false;
+    if(e.touches.length===1){lx=e.touches[0].clientX;ly=e.touches[0].clientY;}
+    if(e.touches.length===2) lpd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  },{passive:true});
+  renderer.domElement.addEventListener('touchmove',e=>{
+    if(e.touches.length===1){
+      tgt.t-=(e.touches[0].clientX-lx)*0.005; lx=e.touches[0].clientX;
+      tgt.p=Math.max(0.2,Math.min(Math.PI-0.2,tgt.p+(e.touches[0].clientY-ly)*0.005)); ly=e.touches[0].clientY;
+    }
+    if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      tgt.r=Math.max(0.5,Math.min(25,tgt.r-(d-lpd)*0.02)); lpd=d;
+    }
+  },{passive:true});
+
+  // Load GLB
+  const loader = new THREE.GLTFLoader();
+  loader.load(glbPath, gltf => {
+    const wrapper = new THREE.Group();
+
+    gltf.scene.traverse(node => {
+      if (!node.isMesh && !node.isSkinnedMesh) return;
+      node.updateWorldMatrix(true, false);
+      const wm   = node.matrixWorld.clone();
+      const geo  = node.geometry;
+      const mats = Array.isArray(node.material) ? node.material : [node.material];
+      const grps = geo.groups && geo.groups.length > 0 ? geo.groups
+        : [{start:0, count: geo.index ? geo.index.count : geo.attributes.position.count, materialIndex:0}];
+
+      grps.forEach(grp => {
+        const mat = (mats[grp.materialIndex||0]||mats[0]).clone();
+        mat.emissive = new THREE.Color(0); mat.emissiveIntensity = 0;
+        const sg = new THREE.BufferGeometry();
+        if (geo.index) {
+          const src=geo.index.array, sl=src.slice(grp.start,grp.start+grp.count);
+          let mn=Infinity,mx=-Infinity;
+          for(let i=0;i<sl.length;i++){mn=Math.min(mn,sl[i]);mx=Math.max(mx,sl[i]);}
+          const ni=new Uint32Array(sl.length);
+          for(let i=0;i<sl.length;i++) ni[i]=sl[i]-mn;
+          sg.setIndex(new THREE.BufferAttribute(ni,1));
+          for(const[n,a] of Object.entries(geo.attributes)){
+            const sz=a.itemSize,ar=a.array,vc=mx-mn+1,out=new ar.constructor(vc*sz);
+            for(let v=0;v<vc;v++) for(let c=0;c<sz;c++) out[v*sz+c]=ar[(mn+v)*sz+c];
+            sg.setAttribute(n,new THREE.BufferAttribute(out,sz));
+          }
+        }
+        sg.computeVertexNormals();
+        const m=new THREE.Mesh(sg,mat); m.applyMatrix4(wm);
+        m.castShadow=m.receiveShadow=true; wrapper.add(m);
+      });
+    });
+
+    const box=new THREE.Box3().setFromObject(wrapper);
+    const ctr=box.getCenter(new THREE.Vector3());
+    const sz=box.getSize(new THREE.Vector3());
+    const sc=3.0/Math.max(sz.x,sz.y,sz.z);
+    wrapper.scale.setScalar(sc);
+    wrapper.position.sub(ctr.clone().multiplyScalar(sc));
+    const ba=new THREE.Box3().setFromObject(wrapper);
+    wrapper.position.y-=ba.min.y;
+    scene.add(wrapper);
+
+    const gnd=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.ShadowMaterial({opacity:0.15}));
+    gnd.rotation.x=-Math.PI/2; gnd.position.y=-0.001; gnd.receiveShadow=true; scene.add(gnd);
+
+    tgt.r=Math.max(3,sz.x*sc*2.2); sph={t:0.45,p:1.15,r:tgt.r}; tgt={...sph};
+    pivot.set(0,(sz.y*sc)/2.5,0); autoRot=true;
+
+  }, undefined, err => {
+    console.error('GLB load error:', err);
+    wrap.innerHTML += `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--text3);">[ Could not load model — check models/ folder ]</div>`;
+  });
+
+  const clock = new THREE.Clock();
+  let rafId;
+  function animate() {
+    rafId = requestAnimationFrame(animate);
+    const dt=clock.getDelta();
+    sph.t+=(tgt.t-sph.t)*0.07; sph.p+=(tgt.p-sph.p)*0.07; sph.r+=(tgt.r-sph.r)*0.07;
+    if(autoRot) tgt.t+=dt*0.12;
+    updateCam();
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  // Stop rendering if the wrap element gets removed from DOM (user switches back to images)
+  const mo = new MutationObserver(() => {
+    if (!document.body.contains(wrap)) {
+      cancelAnimationFrame(rafId);
+      renderer.dispose();
+      mo.disconnect();
+    }
+  });
+  mo.observe(document.getElementById('modal-img-wrap'), { childList: true });
+
+  // Resize when modal resizes
+  const ro = new ResizeObserver(() => {
+    renderer.setSize(W(), H());
+    camera.aspect = W() / H();
+    camera.updateProjectionMatrix();
+  });
+  ro.observe(wrap);
+}
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CUTTING MAT BACKGROUND
+// ══════════════════════════════════════════════════════════════
+(function () {
+  const canvas = document.getElementById('mat-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W = 0, H = 0;
+  const mouse  = { x: -9999, y: -9999 };
+  const smooth = { x: -9999, y: -9999 };
+  const DOT_EASE = 0.07, GLOW_EASE = 0.12;
+  const glow = { x: -9999, y: -9999 };
+  let looping = false;
+
+  const MAT_BG='#0b1510',MINOR_COLOR='rgba(200,240,210,0.10)',MAJOR_COLOR='rgba(200,240,210,0.22)';
+  const TICK_COLOR='rgba(200,240,210,0.30)',NUM_COLOR='rgba(200,240,210,0.28)',GLOW_COLOR=[180,240,200];
+  const MINOR=20,MAJOR=100,RULER=24,GLOW_R=420;
+  let offscreen,offCtx;
+
+  function buildOffscreen(){
+    offscreen=document.createElement('canvas');
+    offscreen.width=W;offscreen.height=H;
+    offCtx=offscreen.getContext('2d');drawMat(offCtx);
+  }
+
+  function drawMat(c){
+    c.fillStyle=MAT_BG;c.fillRect(0,0,W,H);
+    c.strokeStyle=MINOR_COLOR;c.lineWidth=0.5;c.beginPath();
+    for(let x=RULER;x<=W-RULER;x+=MINOR){c.moveTo(x+0.5,RULER);c.lineTo(x+0.5,H-RULER);}
+    for(let y=RULER;y<=H-RULER;y+=MINOR){c.moveTo(RULER,y+0.5);c.lineTo(W-RULER,y+0.5);}
+    c.stroke();
+    c.strokeStyle=MAJOR_COLOR;c.lineWidth=0.8;c.beginPath();
+    for(let x=RULER;x<=W-RULER;x+=MAJOR){c.moveTo(x+0.5,RULER);c.lineTo(x+0.5,H-RULER);}
+    for(let y=RULER;y<=H-RULER;y+=MAJOR){c.moveTo(RULER,y+0.5);c.lineTo(W-RULER,y+0.5);}
+    c.stroke();
+    c.fillStyle='rgba(0,0,0,0.35)';
+    c.fillRect(0,0,W,RULER);c.fillRect(0,H-RULER,W,RULER);
+    c.fillRect(0,0,RULER,H);c.fillRect(W-RULER,0,RULER,H);
+    c.strokeStyle='rgba(200,240,210,0.18)';c.lineWidth=0.5;c.beginPath();
+    c.moveTo(0,RULER);c.lineTo(W,RULER);c.moveTo(0,H-RULER);c.lineTo(W,H-RULER);
+    c.moveTo(RULER,0);c.lineTo(RULER,H);c.moveTo(W-RULER,0);c.lineTo(W-RULER,H);c.stroke();
+    c.fillStyle=NUM_COLOR;c.strokeStyle=TICK_COLOR;c.lineWidth=0.5;
+    c.font=`9px 'DM Mono',monospace`;c.textAlign='center';c.textBaseline='middle';
+    for(let x=RULER;x<=W-RULER;x+=MINOR){
+      const iM=((x-RULER)%MAJOR===0),tH=iM?6:3;
+      c.beginPath();c.moveTo(x+0.5,RULER-tH);c.lineTo(x+0.5,RULER);c.stroke();
+      if(iM)c.fillText(Math.round((x-RULER)/MINOR),x,RULER/2);
+    }
+    for(let x=RULER;x<=W-RULER;x+=MINOR){
+      const iM=((x-RULER)%MAJOR===0),tH=iM?6:3;
+      c.beginPath();c.moveTo(x+0.5,H-RULER);c.lineTo(x+0.5,H-RULER+tH);c.stroke();
+      if(iM)c.fillText(Math.round((x-RULER)/MINOR),x,H-RULER/2);
+    }
+    c.save();
+    for(let y=RULER;y<=H-RULER;y+=MINOR){
+      const iM=((y-RULER)%MAJOR===0),tW=iM?6:3;
+      c.beginPath();c.moveTo(RULER-tW,y+0.5);c.lineTo(RULER,y+0.5);c.stroke();
+      if(iM){c.save();c.translate(RULER/2,y);c.rotate(-Math.PI/2);c.fillText(Math.round((y-RULER)/MINOR),0,0);c.restore();}
+    }
+    c.restore();
+    for(let y=RULER;y<=H-RULER;y+=MINOR){
+      const iM=((y-RULER)%MAJOR===0),tW=iM?6:3;
+      c.beginPath();c.moveTo(W-RULER,y+0.5);c.lineTo(W-RULER+tW,y+0.5);c.stroke();
+      if(iM){c.save();c.translate(W-RULER/2,y);c.rotate(-Math.PI/2);c.fillText(Math.round((y-RULER)/MINOR),0,0);c.restore();}
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    if(offscreen)ctx.drawImage(offscreen,0,0);
+    if(glow.x>0){
+      const[r,g2,b]=GLOW_COLOR;
+      const vignette=ctx.createRadialGradient(glow.x,glow.y,GLOW_R*0.5,glow.x,glow.y,GLOW_R*1.6);
+      vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,0.55)');
+      ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
+      const lit=ctx.createRadialGradient(glow.x,glow.y,0,glow.x,glow.y,GLOW_R);
+      lit.addColorStop(0,`rgba(${r},${g2},${b},0.18)`);lit.addColorStop(0.35,`rgba(${r},${g2},${b},0.08)`);
+      lit.addColorStop(0.7,`rgba(${r},${g2},${b},0.02)`);lit.addColorStop(1,`rgba(${r},${g2},${b},0)`);
+      ctx.fillStyle=lit;ctx.beginPath();ctx.arc(glow.x,glow.y,GLOW_R,0,Math.PI*2);ctx.fill();
+    }
+    if(smooth.x>0&&smooth.x<W&&smooth.y>0&&smooth.y<H){
+      const halo=ctx.createRadialGradient(smooth.x,smooth.y,0,smooth.x,smooth.y,22);
+      halo.addColorStop(0,'rgba(232,196,106,0.35)');halo.addColorStop(0.4,'rgba(232,196,106,0.10)');halo.addColorStop(1,'rgba(232,196,106,0)');
+      ctx.fillStyle=halo;ctx.beginPath();ctx.arc(smooth.x,smooth.y,22,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(smooth.x,smooth.y,3,0,Math.PI*2);ctx.fillStyle='rgba(232,196,106,0.92)';ctx.fill();
+      ctx.strokeStyle='rgba(232,196,106,0.35)';ctx.lineWidth=0.5;ctx.beginPath();
+      ctx.moveTo(smooth.x-10,smooth.y);ctx.lineTo(smooth.x+10,smooth.y);
+      ctx.moveTo(smooth.x,smooth.y-10);ctx.lineTo(smooth.x,smooth.y+10);ctx.stroke();
+    }
+  }
+
+  function loop(){
+    glow.x+=(mouse.x-glow.x)*GLOW_EASE;glow.y+=(mouse.y-glow.y)*GLOW_EASE;
+    smooth.x+=(mouse.x-smooth.x)*DOT_EASE;smooth.y+=(mouse.y-smooth.y)*DOT_EASE;
+    draw();
+    if(Math.abs(mouse.x-smooth.x)>0.3||Math.abs(mouse.y-smooth.y)>0.3){
+      requestAnimationFrame(loop);
+    }else{looping=false;}
+  }
+
+  window.addEventListener('mousemove',e=>{
+    mouse.x=e.clientX;mouse.y=e.clientY;
+    if(!looping){looping=true;requestAnimationFrame(loop);}
+  },{passive:true});
+  window.addEventListener('resize',()=>{
+    W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;buildOffscreen();draw();
+  },{passive:true});
+
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;buildOffscreen();draw();}
+  resize();
+})();
+</script>
+</body>
+</html>
