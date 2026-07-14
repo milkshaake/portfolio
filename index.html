@@ -20,14 +20,14 @@
   #mat-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
   /* NAV */
-  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:60px;background:rgba(8,14,10,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 3rem;height:60px;background:rgba(8,14,10,0.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
   .nav-logo{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:0.1em;text-decoration:none;}
   .nav-links{display:flex;gap:2.5rem;list-style:none;}
   .nav-links a{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);text-decoration:none;transition:color 0.2s;}
   .nav-links a:hover{color:var(--text);}
 
   /* HERO */
-  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 3rem 5rem;overflow:hidden;z-index:1;}
+  .hero{position:relative;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 3rem 5rem;overflow:hidden;z-index:1;}
   .hero-content{position:relative;z-index:1;max-width:900px;}
   .hero-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;}
   .hero-tag::before{content:'';display:block;width:24px;height:1px;background:var(--accent);}
@@ -72,7 +72,7 @@
   .project-arrow svg{width:14px;height:14px;stroke:var(--text);fill:none;stroke-width:1.5;}
 
   /* MODAL */
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;padding:2rem;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;padding:2rem;}
   .modal-overlay.open{opacity:1;pointer-events:all;}
   .modal{background:var(--bg2);border:1px solid var(--border2);max-width:860px;width:100%;max-height:85vh;overflow-y:auto;position:relative;transform:translateY(20px);transition:transform 0.3s;}
   .modal-overlay.open .modal{transform:translateY(0);}
@@ -148,6 +148,7 @@
   #viewer-topbar{
     position:absolute;top:0;left:0;right:0;height:52px;
     background:rgba(8,14,10,0.92);
+    -webkit-backdrop-filter:blur(12px);
     backdrop-filter:blur(12px);
     border-bottom:1px solid var(--border2);
     display:flex;align-items:center;justify-content:space-between;
@@ -187,6 +188,10 @@
     .projects-grid{grid-template-columns:1fr;}
     .project-card.featured,.project-card.wide,.project-card.full{grid-column:span 1;}
     .hero-stats{gap:2rem;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}
   }
 </style>
 </head>
@@ -279,7 +284,7 @@
   <div class="contact-layout">
     <div class="contact-text fade-in">Available for internship and co-op positions, freelance CAD work, and collaborative engineering projects. Reach out through any of the channels listed.</div>
     <div class="contact-links fade-in">
-      <a href="/cdn-cgi/l/email-protection#20594f555260454d41494c0e434f4d" class="contact-link"><span class="contact-link-name">Email</span><span class="contact-link-handle"><span class="__cf_email__" data-cfemail="dda4b2a8af9db8b0bcb4b1f3beb2b0">[email&#160;protected]</span></span></a>
+      <a href="#" class="contact-link" id="email-link" data-u="your" data-d="email.com"><span class="contact-link-name">Email</span><span class="contact-link-handle" id="email-handle"></span></a>
       <a href="https://linkedin.com/in/yourhandle" class="contact-link" target="_blank"><span class="contact-link-name">LinkedIn</span><span class="contact-link-handle">/in/yourhandle</span></a>
       <a href="https://github.com/milkshaake" class="contact-link" target="_blank"><span class="contact-link-name">GitHub</span><span class="contact-link-handle">@yourhandle</span></a>
     </div>
@@ -304,7 +309,16 @@
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+(function () {
+  const link = document.getElementById('email-link');
+  const handle = document.getElementById('email-handle');
+  const addr = link.dataset.u + '@' + link.dataset.d;
+  link.href = 'mailto:' + addr;
+  handle.textContent = addr;
+})();
+</script>
+<script>
 // ══════════════════════════════════════════════════════════════
 //  PROJECTS
 //  image  : "images/photo.jpg"  or  ["images/a.jpg","images/b.jpg"]
@@ -566,9 +580,17 @@ function initScene(wrap, glbPath) {
   const W = () => wrap.clientWidth;
   const H = () => wrap.clientHeight || Math.round(wrap.clientWidth * 9/16);
 
-  const scene    = new THREE.Scene();
-  const camera   = new THREE.PerspectiveCamera(38, W()/H(), 0.001, 400);
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, W()/H(), 0.001, 400);
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  } catch (err) {
+    console.error('WebGL unavailable:', err);
+    wrap.innerHTML = `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1.5rem;font-family:var(--mono);font-size:12px;color:var(--text3);">[ 3D preview needs WebGL, which isn't available in this browser ]</div>`;
+    return;
+  }
 
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(W(), H());
@@ -578,7 +600,7 @@ function initScene(wrap, glbPath) {
   renderer.shadowMap.enabled  = true;
   renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
   renderer.setClearColor(0x0b1510, 1);
-  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;';
+  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;';
   wrap.appendChild(renderer.domElement);
 
   // Lights
@@ -593,7 +615,8 @@ function initScene(wrap, glbPath) {
   let isDrag=false, px=0, py=0;
   let sph={t:0.45,p:1.15,r:5}, tgt={...sph};
   const pivot = new THREE.Vector3(0,0,0);
-  let autoRot = true;
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let autoRot = !reduceMotion;
 
   function updateCam() {
     camera.position.set(
@@ -683,7 +706,7 @@ function initScene(wrap, glbPath) {
     gnd.rotation.x=-Math.PI/2; gnd.position.y=-0.001; gnd.receiveShadow=true; scene.add(gnd);
 
     tgt.r=Math.max(3,sz.x*sc*2.2); sph={t:0.45,p:1.15,r:tgt.r}; tgt={...sph};
-    pivot.set(0,(sz.y*sc)/2.5,0); autoRot=true;
+    pivot.set(0,(sz.y*sc)/2.5,0); autoRot=!reduceMotion;
 
   }, undefined, err => {
     console.error('GLB load error:', err);
